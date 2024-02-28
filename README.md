@@ -2,10 +2,6 @@
 
 ![App](/.github/assets/ticketflow.gif)
 
-Demo:
-
-- https://assessment-enroute.cesarclarosns.com
-
 This repository contains two folders with separate NodeJS applications: a NestJS REST API and a NextJS app. Additionally, there is a Docker Compose file to easily run both applications together in a containerized environment.
 
 ## Folder Structure
