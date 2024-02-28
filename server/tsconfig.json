@@ -5,6 +5,7 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",
     "sourceMap": true,
@@ -18,17 +19,10 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@app": ["src/app"],
-      "@app/*": ["src/*"],
-      "@config": ["src/config"],
-      "@config/*": ["src/config/*"],
-      "@features": ["src/features"],
-      "@features/*": ["src/features/*"],
-      "@common": ["src/common"],
-      "@common/*": ["src/common/*"],
-      "@libs": ["src/libs"],
-      "@libs/*": ["src/libs/*"]
+      "@/": ["src/"],
+      "@/*": ["src/*"]
     },
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "typeRoots": ["./node_modules/@types", "./src/types.d.ts"]
   }
 }

@@ -1,33 +1,30 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { FilterQuery, HydratedDocument, Model } from 'mongoose'
-import * as MongooseDelete from 'mongoose-delete'
-import { Factory } from 'nestjs-seeder'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document } from 'mongoose';
+import MongooseDelete from 'mongoose-delete';
+import { Factory } from 'nestjs-seeder';
 
 @Schema({
-  timestamps: true,
   collection: 'categories',
+  timestamps: true,
+  versionKey: false,
 })
-export class Category {
+export class Category extends Document {
   @Factory((faker) => faker.lorem.words(1))
   @Prop({ required: true, type: String })
-  categoryName: string
+  categoryName: string;
 
-  @Factory((faker) => faker.lorem.words({ min: 2, max: 5 }))
+  @Factory((faker) => faker.lorem.words({ max: 5, min: 2 }))
   @Prop({ type: String })
-  description: string
+  description: string;
 
   @Factory((faker, ctx) => ctx.createdBy)
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
-  createdBy: string
+  createdBy: mongoose.Types.ObjectId;
 }
 
-export type CategoryDocument = HydratedDocument<Category>
-export const CategorySchema = SchemaFactory.createForClass(Category)
+export const CategorySchema = SchemaFactory.createForClass(Category);
+
 CategorySchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: true,
-})
-
-export interface CategoryModel extends Model<Category> {}
-
-export type CategoryFilterQuery = FilterQuery<CategoryDocument>
+});

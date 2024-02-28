@@ -1,4 +1,7 @@
-import { useDeleteTicket } from '@hooks/tickets'
+import { type DialogProps } from '@radix-ui/react-alert-dialog';
+import { AxiosError } from 'axios';
+
+import { ResponseErrorMessage } from '@/components/response-error-message';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,24 +10,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@components/ui/alert-dialog'
-import { DialogProps } from '@radix-ui/react-alert-dialog'
-import { useToast } from '@components/ui/use-toast'
-import { ResponseErrorMessage } from '@components/response-error-message'
-import { AxiosError } from 'axios'
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { useDeleteTicketMutation } from '@/hooks/tickets/use-delete-ticket-mutation';
 
 export function DeleteTicketAlertDialog({
   id,
   open,
   onOpenChange,
 }: {
-  id: string
-  open: DialogProps['open']
-  onOpenChange: DialogProps['onOpenChange']
+  id: string;
+  open: DialogProps['open'];
+  onOpenChange: DialogProps['onOpenChange'];
 }) {
-  const { toast } = useToast()
+  const { toast } = useToast();
 
-  const { mutateAsync } = useDeleteTicket(id)
+  const { mutateAsync } = useDeleteTicketMutation(id);
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -40,14 +41,13 @@ export function DeleteTicketAlertDialog({
                 .then(() => {
                   toast({
                     title: 'Ticket deleted.',
-                  })
+                  });
                 })
                 .catch((error) => {
                   if (error instanceof AxiosError) {
-                    const message = error?.response?.data?.message
+                    const message = error?.response?.data?.message;
 
                     toast({
-                      title: 'Uh oh! Something went wrong.',
                       description: (
                         <>
                           {message ? (
@@ -57,10 +57,11 @@ export function DeleteTicketAlertDialog({
                           )}
                         </>
                       ),
+                      title: 'Uh oh! Something went wrong.',
                       variant: 'destructive',
-                    })
+                    });
                   }
-                })
+                });
             }}
           >
             Continue
@@ -68,5 +69,5 @@ export function DeleteTicketAlertDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }

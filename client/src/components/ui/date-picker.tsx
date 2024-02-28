@@ -1,24 +1,29 @@
-import * as React from 'react'
-import { Calendar as CalendarIcon } from 'lucide-react'
-import { Button } from '@components/ui/button'
-import { Calendar } from '@components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover'
-import { cn } from '@libs/utils'
-import { DayPickerSingleProps } from 'react-day-picker'
-import { format } from 'date-fns'
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import * as React from 'react';
+import { type DayPickerSingleProps } from 'react-day-picker';
+
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/libs/utils';
 
 export function DatePicker({ ...props }: Omit<DayPickerSingleProps, 'mode'>) {
   return (
     <Popover>
-      <PopoverTrigger asChild className='z-10'>
+      <PopoverTrigger asChild className="z-10">
         <Button
           variant={'outline'}
           className={cn(
             'justify-start text-left font-normal',
-            !props.selected && 'text-muted-foreground'
+            !props.selected && 'text-muted-foreground',
           )}
         >
-          <CalendarIcon className='mr-2 h-4 w-4' />
+          <CalendarIcon className="mr-2 h-4 w-4" />
           {props.selected ? (
             format(new Date(props.selected), 'PPP')
           ) : (
@@ -26,9 +31,9 @@ export function DatePicker({ ...props }: Omit<DayPickerSingleProps, 'mode'>) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className='w-auto p-0'>
-        <Calendar mode='single' {...props} />
+      <PopoverContent className="w-auto p-0">
+        <Calendar mode="single" {...props} />
       </PopoverContent>
     </Popover>
-  )
+  );
 }

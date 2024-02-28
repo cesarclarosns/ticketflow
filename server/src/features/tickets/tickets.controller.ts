@@ -1,25 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Query,
-  Req,
+  Get,
   HttpCode,
   HttpStatus,
-} from '@nestjs/common'
-import { TicketsService } from './tickets.service'
-import {
-  CreateTicketDto,
-  UpdateTicketDto,
-  FindAllTicketsQueryDto,
-  TicketDto,
-} from './dto'
-import { Request } from 'express'
-import aqp from 'api-query-params'
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -27,14 +18,21 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-} from '@nestjs/swagger'
-import { UnauthorizedResponseBodyDto } from '@common/dto/unauthorized-reponse-body.dto'
-import { BadRequestResponseBodyDto } from '@common/dto/bad-request-reponse-body.dto'
-import { Ticket } from './entities/ticket.entity'
-import { PatchResponseBodyDto } from '@common/dto/patch-response-body.dto'
-import { DeleteResponseBodyDto } from '@common/dto/delete-response-body.dto'
-import mongoose from 'mongoose'
-import { FindAllTicketsResponseBodyDto } from './dto/find-all-tickets-response-body.dto'
+} from '@nestjs/swagger';
+import { Request } from 'express';
+
+import { BadRequestResponseBodyDto } from '@/common/dto/bad-request-reponse-body.dto';
+import { DeleteResponseBodyDto } from '@/common/dto/delete-response-body.dto';
+import { PatchResponseBodyDto } from '@/common/dto/patch-response-body.dto';
+import { UnauthorizedResponseBodyDto } from '@/common/dto/unauthorized-reponse-body.dto';
+
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { FindAllTicketsDto } from './dto/find-all-tickets.dto';
+import { FindAllTicketsResponseBodyDto } from './dto/find-all-tickets-response.dto';
+import { TicketDto } from './dto/ticket.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { Ticket } from './entities/ticket.entity';
+import { TicketsService } from './tickets.service';
 
 @Controller('tickets')
 @ApiTags('tickets')
@@ -54,11 +52,12 @@ export class TicketsController {
     type: UnauthorizedResponseBodyDto,
   })
   create(@Req() req: Request, @Body() createTicketDto: CreateTicketDto) {
-    const userId = req.user.sub
-    createTicketDto.createdBy = userId
-    if (!createTicketDto.asignee) createTicketDto.asignee = userId
+    const userId = req.user.sub;
 
-    return this.ticketsService.create(createTicketDto)
+    createTicketDto.createdBy = userId;
+    if (!createTicketDto.asignee) createTicketDto.asignee = userId;
+
+    return this.ticketsService.create(createTicketDto);
   }
 
   @Get()
@@ -68,52 +67,12 @@ export class TicketsController {
   @ApiUnauthorizedResponse({
     type: UnauthorizedResponseBodyDto,
   })
-  findAll(@Req() req: Request, @Query() query: FindAllTicketsQueryDto) {
-    const userId = req.user.sub
+  findAll(@Req() req: Request, @Query() findAllTicketsDto: FindAllTicketsDto) {
+    const userId = req.user.sub;
 
-    const q = aqp({ ...query })
+    findAllTicketsDto.userId = userId;
 
-    let $andClauses: object[] = q.filter?.$and?.length ? q.filter.$and : []
-
-    $andClauses = $andClauses.filter((obj) => {
-      const fields = Object.keys(obj)
-      const allowedFields = ['title', 'status', 'ticketCategory']
-
-      return fields.length === 1 && allowedFields.includes(fields[0])
-    })
-
-    $andClauses = $andClauses.map((obj) => {
-      Object.entries(obj).forEach(([k, v]) => {
-        if (k === 'title') {
-          obj[k] = {
-            $regex: new RegExp(v),
-            $options: 'i',
-          }
-        }
-        if (k === 'ticketCategory' && v?.$in && Array.isArray(v.$in)) {
-          const ids = v.$in as string[]
-          obj[k]['$in'] = ids.map((id) => new mongoose.Types.ObjectId(id))
-        }
-      })
-      return obj
-    })
-
-    return this.ticketsService.findAll({
-      filter: {
-        $and: [
-          {
-            $or: [
-              { asignee: new mongoose.Types.ObjectId(userId) },
-              { createdBy: new mongoose.Types.ObjectId(userId) },
-            ],
-          },
-          ...($andClauses.length ? $andClauses : []),
-        ],
-      },
-      limit: q.limit,
-      skip: q.skip,
-      sort: q.sort,
-    })
+    return this.ticketsService.findAll(findAllTicketsDto);
   }
 
   @Get(':id')
@@ -124,17 +83,9 @@ export class TicketsController {
     type: UnauthorizedResponseBodyDto,
   })
   async findOne(@Req() req: Request, @Param('id') id: string) {
-    const userId = req.user.sub
-    return await this.ticketsService.findOne(id, {
-      $and: [
-        {
-          $or: [
-            { asignee: new mongoose.Types.ObjectId(userId) },
-            { createdBy: new mongoose.Types.ObjectId(userId) },
-          ],
-        },
-      ],
-    })
+    const userId = req.user.sub;
+
+    return await this.ticketsService.findOne({ ticketId: id, userId });
   }
 
   @Patch(':id')
@@ -149,12 +100,12 @@ export class TicketsController {
     @Param('id') id: string,
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
-    const userId = req.user.sub
+    const userId = req.user.sub;
+
     return this.ticketsService.update(
-      id,
-      { $and: [{ $or: [{ asignee: userId }, { createdBy: userId }] }] },
+      { ticketId: id, userId },
       updateTicketDto,
-    )
+    );
   }
 
   @Delete(':id')
@@ -168,9 +119,8 @@ export class TicketsController {
     type: UnauthorizedResponseBodyDto,
   })
   remove(@Req() req: Request, @Param('id') id: string) {
-    const userId = req.user.sub
-    return this.ticketsService.remove(id, {
-      $and: [{ $or: [{ asignee: userId }, { createdBy: userId }] }],
-    })
+    const userId = req.user.sub;
+
+    return this.ticketsService.remove({ ticketId: id, userId });
   }
 }

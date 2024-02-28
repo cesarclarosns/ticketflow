@@ -1,25 +1,25 @@
-import { ETicketStatus } from '@common/models/ticket'
-import { Icons } from '@components/ui/icons'
+import { Icons } from '@/components/ui/icons';
+import { ETicketStatus } from '@/models/tickets/ticket';
 
 export const statuses = [
   {
-    value: ETicketStatus.pending,
-    label: 'Pending',
     icon: Icons.CircleIcon,
+    label: 'Pending',
+    value: ETicketStatus.pending,
   },
   {
-    value: ETicketStatus.in_progress,
-    label: 'In progress',
     icon: Icons.StopwatchIcon,
+    label: 'In progress',
+    value: ETicketStatus.in_progress,
   },
   {
-    value: ETicketStatus.resolved,
-    label: 'Resolved',
     icon: Icons.CheckCircledIcon,
+    label: 'Resolved',
+    value: ETicketStatus.resolved,
   },
   {
-    value: ETicketStatus.canceled,
-    label: 'Canceled',
     icon: Icons.CrossCircledIcon,
+    label: 'Canceled',
+    value: ETicketStatus.canceled,
   },
-]
+];

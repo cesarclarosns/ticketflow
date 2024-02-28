@@ -1,12 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class BadRequestResponseBodyDto {
   @ApiProperty()
-  errors: { [key: string]: string }
+  errors: { [key: string]: string };
 
   @ApiProperty()
-  message: string | string[]
+  message: string | string[];
 
   @ApiProperty()
-  statusCode: number
+  statusCode: number;
 }

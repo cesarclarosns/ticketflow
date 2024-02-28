@@ -1,37 +1,25 @@
-import { Module } from '@nestjs/common'
-import { EmailService } from './email.service'
-import { MailerModule } from '@nestjs-modules/mailer'
-import { join } from 'path'
-import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter'
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import { CONFIG_VALUES } from '@app/config/configuration'
+import { Module } from '@nestjs/common';
+import { MailerModule } from '@nestjs-modules/mailer';
+
+import { config } from '@/config';
+
+import { EmailService } from './email.service';
 
 @Module({
   imports: [
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        transport: {
-          host: configService.getOrThrow<string>(CONFIG_VALUES.APP.SMTP_HOST),
-          port: 587,
-          secure: false,
-          auth: {
-            user: configService.getOrThrow<string>(CONFIG_VALUES.APP.SMTP_USER),
-            pass: configService.getOrThrow<string>(CONFIG_VALUES.APP.SMTP_PASS),
-          },
+    MailerModule.forRoot({
+      defaults: {
+        from: config.APP.SMTP_EMAIL,
+      },
+      transport: {
+        auth: {
+          pass: config.APP.SMTP_PASS,
+          user: config.APP.SMTP_USER,
         },
-        defaults: {
-          from: configService.getOrThrow<string>(CONFIG_VALUES.APP.SMTP_EMAIL),
-        },
-        // template: {
-        //   dir: join(__dirname, 'templates'),
-        //   adapter: new EjsAdapter(),
-        //   options: {
-        //     strict: true,
-        //   },
-        // },
-      }),
+        host: config.APP.SMTP_HOST,
+        port: 587,
+        secure: false,
+      },
     }),
   ],
   providers: [EmailService],

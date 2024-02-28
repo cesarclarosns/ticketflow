@@ -1,26 +1,27 @@
+import { Injectable } from '@nestjs/common';
 import {
+  registerDecorator,
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
-  registerDecorator,
-} from 'class-validator'
-import { UsersService } from '@features/users/users.service'
-import { Injectable } from '@nestjs/common'
-import mongoose from 'mongoose'
+} from 'class-validator';
+import mongoose from 'mongoose';
+
+import { UsersService } from '@/features/users/users.service';
 
 export function IsUserId(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
       name: 'IsUserId',
-      target: object.constructor,
-      propertyName: propertyName,
       options: validationOptions,
+      propertyName: propertyName,
+      target: object.constructor,
       validator: IsUserIdValidatorConstraint,
-    })
-  }
+    });
+  };
 }
 
-@ValidatorConstraint({ name: 'IsUserIdValidatorConstraint', async: true })
+@ValidatorConstraint({ async: true, name: 'IsUserIdValidatorConstraint' })
 @Injectable()
 export class IsUserIdValidatorConstraint
   implements ValidatorConstraintInterface
@@ -28,11 +29,10 @@ export class IsUserIdValidatorConstraint
   constructor(private usersService: UsersService) {}
 
   async validate(value: string): Promise<boolean> {
-    const isValid = mongoose.Types.ObjectId.isValid(value)
-    if (!isValid) return false
+    const isValid = mongoose.Types.ObjectId.isValid(value);
+    if (!isValid) return false;
 
-    return this.usersService.findOne(value).then((user) => {
-      return Boolean(user)
-    })
+    const user = await this.usersService.findOneById(value);
+    return Boolean(user);
   }
 }

@@ -1,47 +1,69 @@
-import { Injectable } from '@nestjs/common'
-import { CreateTicketDto } from './dto/create-ticket.dto'
-import { UpdateTicketDto } from './dto/update-ticket.dto'
-import { InjectModel } from '@nestjs/mongoose'
-import {
-  Ticket,
-  TicketDocument,
-  TicketFilterQuery,
-} from './entities/ticket.entity'
-import mongoose, { Model } from 'mongoose'
-import { SoftDeleteModel } from 'mongoose-delete'
-import { FindAllTicketsResponseBodyDto } from './dto/find-all-tickets-response-body.dto'
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import mongoose, { Model } from 'mongoose';
+import { SoftDeleteModel } from 'mongoose-delete';
+
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { FindAllTicketsDto } from './dto/find-all-tickets.dto';
+import { FindAllTicketsResponseBodyDto } from './dto/find-all-tickets-response.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { Ticket } from './entities/ticket.entity';
 
 @Injectable()
 export class TicketsService {
   constructor(
     @InjectModel(Ticket.name)
-    private ticketModel: Model<Ticket> & SoftDeleteModel<TicketDocument>,
+    private ticketModel: Model<Ticket> & SoftDeleteModel<Ticket>,
   ) {}
 
   async create(createTicketDto: CreateTicketDto) {
-    return await this.ticketModel.create(createTicketDto)
+    return await this.ticketModel.create(createTicketDto);
   }
 
   async findAll({
-    filter,
-    skip = 0,
-    limit,
+    query,
     sort,
-  }: {
-    filter: TicketFilterQuery
-    sort: any
-    skip?: number
-    limit?: number
-  }): Promise<FindAllTicketsResponseBodyDto> {
+    ticketCategories,
+    statuses,
+    skip,
+    limit,
+    userId,
+  }: FindAllTicketsDto): Promise<FindAllTicketsResponseBodyDto> {
     const result = await this.ticketModel.aggregate(
       [
-        { $match: { ...filter } },
+        {
+          $match: {
+            $and: [
+              {
+                $or: [
+                  { asignee: new mongoose.Types.ObjectId(userId) },
+                  { createdBy: new mongoose.Types.ObjectId(userId) },
+                ],
+              },
+              ...(!!statuses ? [{ status: { $in: statuses } }] : []),
+              ...(!!ticketCategories
+                ? [
+                    {
+                      ticketCategory: {
+                        $in: ticketCategories.map(
+                          (id) => new mongoose.Types.ObjectId(id),
+                        ),
+                      },
+                    },
+                  ]
+                : []),
+              ...(!!query
+                ? [{ title: { $options: 'i', $regex: new RegExp(query) } }]
+                : []),
+            ],
+          },
+        },
         {
           $lookup: {
+            as: 'asignee',
+            foreignField: '_id',
             from: 'users',
             localField: 'asignee',
-            foreignField: '_id',
-            as: 'asignee',
             pipeline: [
               {
                 $project: {
@@ -56,10 +78,10 @@ export class TicketsService {
         { $set: { asignee: { $first: '$asignee' } } },
         {
           $lookup: {
+            as: 'createdBy',
+            foreignField: '_id',
             from: 'users',
             localField: 'createdBy',
-            foreignField: '_id',
-            as: 'createdBy',
             pipeline: [
               {
                 $project: {
@@ -74,19 +96,27 @@ export class TicketsService {
         { $set: { createdBy: { $first: '$createdBy' } } },
         {
           $lookup: {
+            as: 'ticketCategory',
+            foreignField: '_id',
             from: 'categories',
             localField: 'ticketCategory',
-            foreignField: '_id',
-            as: 'ticketCategory',
           },
         },
         { $set: { ticketCategory: { $first: '$ticketCategory' } } },
-        ...(sort ? [{ $sort: { ...sort } }] : []),
+        {
+          $sort: {
+            ...(!!sort
+              ? {
+                  [sort.replace('-', '')]: sort.startsWith('-') ? -1 : 1,
+                }
+              : { title: 1 }),
+          },
+        },
         {
           $facet: {
             results: [
-              ...(skip ? [{ $skip: skip }] : []),
-              ...(limit ? [{ $limit: limit }] : []),
+              ...(skip ? [{ $skip: +skip }] : []),
+              ...(limit ? [{ $limit: +limit }] : []),
             ],
             totalCount: [
               {
@@ -98,20 +128,32 @@ export class TicketsService {
         { $set: { totalCount: { $first: '$totalCount' } } },
       ],
       { collation: { locale: 'en_US' } },
-    )
+    );
 
-    return result[0]
+    return result[0];
   }
 
-  async findOne(id: string, filter: TicketFilterQuery) {
+  async findOne(filter: { ticketId: string; userId: string }) {
     const tickets = await this.ticketModel.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(id), ...filter } },
+      {
+        $match: {
+          $and: [
+            {
+              $or: [
+                { asignee: new mongoose.Types.ObjectId(filter.userId) },
+                { createdBy: new mongoose.Types.ObjectId(filter.userId) },
+              ],
+            },
+            { _id: new mongoose.Types.ObjectId(filter.ticketId) },
+          ],
+        },
+      },
       {
         $lookup: {
+          as: 'asignee',
+          foreignField: '_id',
           from: 'users',
           localField: 'asignee',
-          foreignField: '_id',
-          as: 'asignee',
           pipeline: [
             {
               $project: {
@@ -124,10 +166,10 @@ export class TicketsService {
       { $set: { asignee: { $first: '$asignee' } } },
       {
         $lookup: {
+          as: 'createdBy',
+          foreignField: '_id',
           from: 'users',
           localField: 'createdBy',
-          foreignField: '_id',
-          as: 'createdBy',
           pipeline: [
             {
               $project: {
@@ -140,32 +182,33 @@ export class TicketsService {
       { $set: { createdBy: { $first: '$createdBy' } } },
       {
         $lookup: {
+          as: 'ticketCategory',
+          foreignField: '_id',
           from: 'categories',
           localField: 'ticketCategory',
-          foreignField: '_id',
-          as: 'ticketCategory',
         },
       },
       { $set: { ticketCategory: { $first: '$ticketCategory' } } },
       { $limit: 1 },
-    ])
+    ]);
 
-    if (tickets.length) return tickets[0]
-    return null
+    return tickets.at(0);
   }
 
   async update(
-    id: string,
-    filter: TicketFilterQuery,
+    filter: { ticketId: string; userId: string },
     updateTicketDto: UpdateTicketDto,
   ) {
     return await this.ticketModel.updateOne(
-      { _id: id, ...filter },
+      { _id: filter.ticketId, createdBy: filter.userId },
       { $set: updateTicketDto },
-    )
+    );
   }
 
-  async remove(id: string, filter: TicketFilterQuery) {
-    return await this.ticketModel.delete({ _id: id, ...filter })
+  async remove(filter: { ticketId: string; userId: string }) {
+    return await this.ticketModel.delete({
+      _id: filter.ticketId,
+      createdBy: filter.userId,
+    });
   }
 }

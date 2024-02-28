@@ -6,20 +6,21 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@components/ui/select'
-import { statuses } from './tickets-table/data/data'
+} from '@/components/ui/select';
+
+import { statuses } from './tickets-table/data/data';
 
 export function StatutesSelect({
   defaultValue,
   onValueChange,
 }: {
-  defaultValue: string | undefined
-  onValueChange: (value: string) => void
+  defaultValue: string | undefined;
+  onValueChange: (value: string) => void;
 }) {
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
       <SelectTrigger>
-        <SelectValue placeholder='Select status' />
+        <SelectValue placeholder="Select status" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -30,10 +31,10 @@ export function StatutesSelect({
                 <SelectItem key={status.value} value={status.value}>
                   {status.label}
                 </SelectItem>
-              )
+              );
             })}
         </SelectGroup>
       </SelectContent>
     </Select>
-  )
+  );
 }

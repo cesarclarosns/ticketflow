@@ -1,15 +1,15 @@
-import { TestBed } from '@automock/jest'
-import { AppController } from '@app/app.controller'
+import { AppController } from '@app/app.controller';
+import { TestBed } from '@automock/jest';
 
 describe('AppController', () => {
-  let appController: AppController
+  let appController: AppController;
 
   beforeEach(async () => {
-    const { unit } = TestBed.create(AppController).compile()
-    appController = unit
-  })
+    const { unit } = TestBed.create(AppController).compile();
+    appController = unit;
+  });
 
   it('should be defined', () => {
-    expect(appController).toBeDefined()
-  })
-})
+    expect(appController).toBeDefined();
+  });
+});

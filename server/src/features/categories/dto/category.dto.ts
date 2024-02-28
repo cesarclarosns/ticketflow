@@ -1,15 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CategoryDto {
   @ApiProperty()
-  _id: string
+  _id: string;
 
   @ApiProperty()
-  categoryName: string
+  categoryName: string;
 
   @ApiProperty()
-  description: string
+  description: string;
 
   @ApiProperty()
-  createdBy: string
+  createdBy: string;
 }

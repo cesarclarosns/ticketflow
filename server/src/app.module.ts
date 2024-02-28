@@ -1,71 +1,58 @@
-// Import core libraries
-import { Module } from '@nestjs/common'
-import { ThrottlerModule } from '@nestjs/throttler'
-import { MongooseModule } from '@nestjs/mongoose'
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { LoggerModule } from 'nestjs-pino';
 
-// Import config files
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import config, { CONFIG_VALUES, configValidationSchema } from '@config/config'
+import { AppController } from '@/app.controller';
+import { AppService } from '@/app.service';
+import { config } from '@/config';
+import { AuthModule } from '@/features/auth/auth.module';
+import { AccessTokenGuard } from '@/features/auth/guards';
+import { CategoriesModule } from '@/features/categories/categories.module';
+import { EmailModule } from '@/features/email/email.module';
+import { TicketsModule } from '@/features/tickets/tickets.module';
+import { UsersModule } from '@/features/users/users.module';
 
-// Import own app files
-import { AppController } from '@app/app.controller'
-import { AppService } from '@app/app.service'
-import { AuthModule } from '@features/auth/auth.module'
-import { UsersModule } from '@features/users/users.module'
-import { EmailModule } from '@common/modules/email/email.module'
-import { EventEmitterModule } from '@nestjs/event-emitter'
-import { TicketsModule } from '@features/tickets/tickets.module'
-import { CategoriesModule } from '@features/categories/categories.module'
-import { APP_GUARD } from '@nestjs/core'
-import { AccessTokenGuard } from '@features/auth/guards'
+import { HealthModule } from './features/health/health.module';
 
 @Module({
+  controllers: [AppController],
   imports: [
+    MongooseModule.forRoot(config.DATABASE.URI),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: 'trace',
+        transport: {
+          target: 'pino-pretty',
+        },
+      },
+      // useExisting: true,
+    }),
     EventEmitterModule.forRoot({
-      wildcard: false,
       delimiter: '.',
+      ignoreErrors: false,
       maxListeners: 10,
       verboseMemoryLeak: false,
-      ignoreErrors: false,
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-      load: [config],
-      validationSchema: configValidationSchema,
-      validationOptions: {
-        allowUnknown: true,
-        abortEarly: true,
-      },
+      wildcard: false,
     }),
     // Rate limit protection
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => [
+    ThrottlerModule.forRoot({
+      throttlers: [
         {
-          ttl: configService.getOrThrow<number>(CONFIG_VALUES.throttler.ttl),
-          limit: configService.getOrThrow<number>(
-            CONFIG_VALUES.throttler.limit,
-          ),
+          limit: config.THROTTLER.LIMIT,
+          ttl: config.THROTTLER.TTL,
         },
       ],
     }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const uri = configService.getOrThrow<string>(CONFIG_VALUES.database.uri)
-        return { uri }
-      },
-    }),
+    HealthModule,
     AuthModule,
     UsersModule,
     EmailModule,
     TicketsModule,
     CategoriesModule,
   ],
-  controllers: [AppController],
   providers: [
     AppService,
     {

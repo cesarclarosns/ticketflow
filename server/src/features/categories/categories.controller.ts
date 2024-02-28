@@ -1,25 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Req,
-  Query,
+  Get,
   HttpCode,
   HttpStatus,
-} from '@nestjs/common'
-import { CategoriesService } from './categories.service'
-import {
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  FindAllCategoriesQueryDto,
-  CategoryDto,
-} from './dto'
-import { Request } from 'express'
-import aqp from 'api-query-params'
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -27,11 +18,20 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-} from '@nestjs/swagger'
-import { UnauthorizedResponseBodyDto } from '@common/dto/unauthorized-reponse-body.dto'
-import { PatchResponseBodyDto } from '@common/dto/patch-response-body.dto'
-import { DeleteResponseBodyDto } from '@common/dto/delete-response-body.dto'
-import { BadRequestResponseBodyDto } from '@common/dto/bad-request-reponse-body.dto'
+} from '@nestjs/swagger';
+import aqp from 'api-query-params';
+import { Request } from 'express';
+
+import { BadRequestResponseBodyDto } from '@/common/dto/bad-request-reponse-body.dto';
+import { DeleteResponseBodyDto } from '@/common/dto/delete-response-body.dto';
+import { PatchResponseBodyDto } from '@/common/dto/patch-response-body.dto';
+import { UnauthorizedResponseBodyDto } from '@/common/dto/unauthorized-reponse-body.dto';
+
+import { CategoriesService } from './categories.service';
+import { CategoryDto } from './dto/category.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { FindAllCategoriesDto } from './dto/find-all-categories.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller('categories')
 @ApiTags('categories')
@@ -51,30 +51,29 @@ export class CategoriesController {
     @Req() req: Request,
     @Body() createCategoryDto: CreateCategoryDto,
   ) {
-    const userId = req.user.sub
-    createCategoryDto.createdBy = userId
+    const userId = req.user.sub;
 
-    return await this.categoriesService.create(createCategoryDto)
+    createCategoryDto.createdBy = userId;
+
+    return await this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
   @ApiOkResponse({
-    type: FindAllCategoriesQueryDto,
+    type: FindAllCategoriesDto,
   })
   @ApiUnauthorizedResponse({
     type: UnauthorizedResponseBodyDto,
   })
   async findAll(
     @Req() req: Request,
-    @Query() query: FindAllCategoriesQueryDto,
+    @Query() findAllCategoriesDto: FindAllCategoriesDto,
   ) {
-    const q = aqp({ ...query })
+    const userId = req.user.sub;
 
-    const userId = req.user.sub
-    return await this.categoriesService.findAll({
-      filter: { ...q.filter, createdBy: userId },
-      sort: q.sort,
-    })
+    findAllCategoriesDto.userId = userId;
+
+    return await this.categoriesService.findAll(findAllCategoriesDto);
   }
 
   @Get(':id')
@@ -85,8 +84,9 @@ export class CategoriesController {
     type: UnauthorizedResponseBodyDto,
   })
   async findOne(@Req() req: Request, @Param('id') id: string) {
-    const userId = req.user.sub
-    return await this.categoriesService.findOne(id, { createdBy: userId })
+    const userId = req.user.sub;
+
+    return await this.categoriesService.findOne({ categoryId: id, userId });
   }
 
   @Patch(':id')
@@ -101,14 +101,12 @@ export class CategoriesController {
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    const userId = req.user.sub
+    const userId = req.user.sub;
+
     return this.categoriesService.update(
-      id,
-      {
-        createdBy: userId,
-      },
+      { categoryId: id, userId },
       updateCategoryDto,
-    )
+    );
   }
 
   @Delete(':id')
@@ -122,7 +120,8 @@ export class CategoriesController {
     type: BadRequestResponseBodyDto,
   })
   remove(@Req() req: Request, @Param('id') id: string) {
-    const userId = req.user.sub
-    return this.categoriesService.remove(id, { createdBy: userId })
+    const userId = req.user.sub;
+
+    return this.categoriesService.remove({ categoryId: id, userId });
   }
 }

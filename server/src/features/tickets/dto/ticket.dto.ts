@@ -1,38 +1,39 @@
-import { CategoryDto } from '@features/categories/dto'
-import { UserDto } from '@features/users/dto'
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
+
+import { CategoryDto } from '@/features/categories/dto/category.dto';
+import { UserDto } from '@/features/users/dto/user.dto';
 
 export class TicketDto {
   @ApiProperty()
-  _id: string
+  _id: string;
 
   @ApiProperty()
-  title: string
+  title: string;
 
   @ApiProperty()
-  description: string
+  description: string;
 
   @ApiProperty({
     type: UserDto,
   })
-  asignee: UserDto
+  asignee: UserDto;
 
   @ApiProperty()
-  dueDate: string
+  dueDate: string;
 
   @ApiProperty({
+    required: false,
     type: CategoryDto,
-    required: false,
   })
-  ticketCategory: CategoryDto
+  ticketCategory: CategoryDto;
 
   @ApiProperty({
     required: false,
   })
-  status: string
+  status: string;
 
   @ApiProperty({
     type: UserDto,
   })
-  createdBy: UserDto
+  createdBy: UserDto;
 }

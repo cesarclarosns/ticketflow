@@ -1,9 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UnauthorizedResponseBodyDto {
   @ApiProperty()
-  message: string
+  message: string;
 
   @ApiProperty()
-  statusCode: number
+  statusCode: number;
 }

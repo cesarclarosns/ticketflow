@@ -1,36 +1,36 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function getInitials(str: string, numInitials: number = 2) {
   return str
     .split(' ')
     .reduce((prev, curr) => {
-      if (prev.length >= numInitials) return prev
-      prev.push(curr)
-      return prev
+      if (prev.length >= numInitials) return prev;
+      prev.push(curr);
+      return prev;
     }, [] as string[])
     .map((str) => str[0])
     .join('')
-    .toUpperCase()
+    .toUpperCase();
 }
 
 export function formatCompactNumber(number: number): number | string {
   if (number < 0) {
-    return '-' + formatCompactNumber(-1 * number)
+    return '-' + formatCompactNumber(-1 * number);
   }
   if (number < 1_000) {
-    return number
+    return number;
   } else if (number >= 1_000 && number < 1_000_000) {
-    return (number / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
+    return (number / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
   } else if (number >= 1_000_000 && number < 1_000_000_000) {
-    return (number / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
+    return (number / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
   } else if (number >= 1_000_000_000 && number < 1_000_000_000_000) {
-    return (number / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B'
+    return (number / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
   } else {
-    return (number / 1_000_000_000_000).toFixed(1).replace(/\.0$/, '') + 'T'
+    return (number / 1_000_000_000_000).toFixed(1).replace(/\.0$/, '') + 'T';
   }
 }

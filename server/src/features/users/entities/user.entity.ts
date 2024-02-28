@@ -1,7 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { FilterQuery, HydratedDocument } from 'mongoose'
-import * as MongooseDelete from 'mongoose-delete'
-import { Factory } from 'nestjs-seeder'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, FilterQuery, HydratedDocument } from 'mongoose';
+import MongooseDelete from 'mongoose-delete';
+import { Factory } from 'nestjs-seeder';
 
 export enum EUserGender {
   'male' = 'male',
@@ -9,49 +9,53 @@ export enum EUserGender {
 }
 
 @Schema({
+  collection: 'users',
   timestamps: {
     createdAt: 'lastUpdate',
     updatedAt: 'lastUpdate',
   },
-  collection: 'users',
+  versionKey: false,
 })
-export class User {
+export class User extends Document {
   @Factory((faker) => faker.helpers.arrayElement(Object.values(EUserGender)))
-  @Prop({ required: true, type: String, enum: EUserGender })
-  gender: string
+  @Prop({ enum: EUserGender, type: String })
+  gender: string;
 
   @Factory((faker, ctx) => faker.person.firstName(ctx.gender))
   @Prop({ required: true, type: String })
-  firstName: string
+  firstName: string;
 
   @Factory((faker, ctx) => faker.person.lastName(ctx.gender))
-  @Prop({ required: true, type: String })
-  lastName: string
+  @Prop({ type: String })
+  lastName: string;
 
-  @Factory((faker) => faker.internet.email())
-  @Prop({ required: true, type: String, unique: true })
-  email: string
+  @Factory((faker, ctx) =>
+    faker.internet.email({ firstName: ctx.firstName, lastName: ctx.lastName }),
+  )
+  @Prop({ sparse: true, type: String, unique: true })
+  email: string;
 
   @Factory((faker, ctx) => ctx.password)
-  @Prop({ required: true, type: String })
-  password: string
+  @Prop({ type: String })
+  password: string;
 
-  @Factory((faker) => faker.date.birthdate({ min: 18, max: 65, mode: 'age' }))
-  @Prop({ required: true, type: Date })
-  birthday: string
+  @Factory((faker) => faker.date.birthdate({ max: 65, min: 18, mode: 'age' }))
+  @Prop({ type: Date })
+  birthday: string;
 
   @Prop({ type: Date })
-  lastConnection?: string
+  lastConnection?: string;
 
   @Prop({ type: Date })
-  lastUpdate?: string
+  lastUpdate?: string;
+
+  @Prop({ type: String })
+  googleId: string;
 }
 
-export type UserDocument = HydratedDocument<User>
-export const UserSchema = SchemaFactory.createForClass(User)
+export const UserSchema = SchemaFactory.createForClass(User);
+
 UserSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: true,
-})
-
-export type UserFilterQuery = FilterQuery<UserDocument>
+});

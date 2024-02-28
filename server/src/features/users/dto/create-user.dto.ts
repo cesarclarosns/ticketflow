@@ -1,42 +1,54 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString,
-  IsNotEmpty,
-  IsEnum,
-  IsEmail,
   IsDateString,
-} from 'class-validator'
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
-import { EUserGender } from '@app/features/users/entities/user.entity'
-import { ApiProperty } from '@nestjs/swagger'
+import { EUserGender } from '@/features/users/entities/user.entity';
 
 export class CreateUserDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  firstName: string
+  firstName: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  lastName: string
+  lastName: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsEmail()
-  email: string
+  email: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  password: string
+  password: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @IsEnum(EUserGender)
-  gender: string
+  gender: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsDateString()
   @IsNotEmpty()
-  birthday: string
+  birthday: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  googleId: string;
 }

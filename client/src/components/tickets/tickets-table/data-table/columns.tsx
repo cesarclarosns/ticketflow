@@ -1,25 +1,36 @@
-'use client'
+'use client';
 
-import { ColumnDef } from '@tanstack/react-table'
-import { Checkbox } from '@components/ui/checkbox'
-import { statuses } from '../data/data'
-import { DataTableColumnHeader } from './data-table-column-header'
-import { DataTableRowActions } from './data-table-row-actions'
-import { TTicket } from '@common/models/ticket'
+import { type ColumnDef } from '@tanstack/react-table';
+import { formatRelative } from 'date-fns';
+
+import { locale } from '@/common/locales/dates/en';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@components/ui/tooltip'
-import { TCategory } from '@common/models/category'
-import { TUser } from '@common/models/user'
-import { formatRelative } from 'date-fns'
-import { locale } from '@common/locales/dates/en'
+} from '@/components/ui/tooltip';
+import { type Category } from '@/models/categories/category';
+import { type Ticket } from '@/models/tickets/ticket';
+import { type User } from '@/models/users/user';
 
-export const columns: ColumnDef<TTicket>[] = [
+import { statuses } from '../data/data';
+import { DataTableColumnHeader } from './data-table-column-header';
+import { DataTableRowActions } from './data-table-row-actions';
+
+export const columns: ColumnDef<Ticket>[] = [
   {
-    id: 'select',
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+      />
+    ),
+    enableHiding: false,
+    enableSorting: false,
     header: ({ table }) => (
       <Checkbox
         checked={
@@ -27,37 +38,19 @@ export const columns: ColumnDef<TTicket>[] = [
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
-        className='translate-y-[2px]'
+        aria-label="Select all"
+        className="translate-y-[2px]"
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
-        className='translate-y-[2px]'
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    id: 'select',
   },
   {
     accessorKey: '_id',
-    meta: {
-      columnName: 'ID',
-    },
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title={column.columnDef.meta!.columnName}
-      />
-    ),
     cell: ({ row }) => (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <div className='w-[80px] truncate'>{row.getValue('_id')}</div>
+            <div className="w-[80px] truncate">{row.getValue('_id')}</div>
           </TooltipTrigger>
           <TooltipContent>
             <p>{row.getValue('_id')}</p>
@@ -65,26 +58,28 @@ export const columns: ColumnDef<TTicket>[] = [
         </Tooltip>
       </TooltipProvider>
     ),
-    enableSorting: false,
     enableHiding: true,
     enableResizing: true,
-  },
-  {
-    accessorKey: 'title',
-    meta: { columnName: 'Title' },
+    enableSorting: false,
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={column.columnDef.meta!.columnName}
       />
     ),
+    meta: {
+      columnName: 'ID',
+    },
+  },
+  {
+    accessorKey: 'title',
     cell: ({ row }) => {
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <div className='flex space-x-2'>
-                <span className='max-w-[150px] truncate font-medium'>
+              <div className="flex space-x-2">
+                <span className="max-w-[150px] truncate font-medium">
                   {row.getValue('title')}
                 </span>
               </div>
@@ -94,31 +89,29 @@ export const columns: ColumnDef<TTicket>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
-    maxSize: 120,
-    minSize: 80,
-    enableResizing: true,
     enableHiding: false,
-  },
-  {
-    accessorKey: 'description',
-    meta: {
-      columnName: 'Description',
-    },
+    enableResizing: true,
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={column.columnDef.meta!.columnName}
       />
     ),
+    maxSize: 120,
+    meta: { columnName: 'Title' },
+    minSize: 80,
+  },
+  {
+    accessorKey: 'description',
     cell: ({ row }) => {
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <div className='flex space-x-2'>
-                <span className='max-w-[150px] truncate font-medium'>
+              <div className="flex space-x-2">
+                <span className="max-w-[150px] truncate font-medium">
                   {row.getValue('description')}
                 </span>
               </div>
@@ -128,30 +121,30 @@ export const columns: ColumnDef<TTicket>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     enableSorting: false,
-  },
-  {
-    accessorKey: 'ticketCategory',
-    meta: {
-      columnName: 'Category',
-    },
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={column.columnDef.meta!.columnName}
       />
     ),
+    meta: {
+      columnName: 'Description',
+    },
+  },
+  {
+    accessorKey: 'ticketCategory',
     cell: ({ row }) => {
-      const ticketCategory = row.getValue('ticketCategory') as TCategory
+      const ticketCategory = row.getValue('ticketCategory') as Category;
 
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <div className='flex space-x-2'>
-                <span className='max-w-[150px] truncate font-medium'>
+              <div className="flex space-x-2">
+                <span className="max-w-[150px] truncate font-medium">
                   {ticketCategory?.categoryName ?? ''}
                 </span>
               </div>
@@ -162,27 +155,27 @@ export const columns: ColumnDef<TTicket>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     enableSorting: false,
-  },
-  {
-    accessorKey: 'dueDate',
-    meta: {
-      columnName: 'Due Date',
-    },
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={column.columnDef.meta!.columnName}
       />
     ),
+    meta: {
+      columnName: 'Category',
+    },
+  },
+  {
+    accessorKey: 'dueDate',
     cell: ({ row }) => {
-      const dueDate = row.getValue('dueDate') as string
+      const dueDate = row.getValue('dueDate') as string;
 
       return (
-        <div className='flex space-x-2'>
-          <span className='w-[200px] truncate font-medium'>
+        <div className="flex space-x-2">
+          <span className="w-[200px] truncate font-medium">
             {dueDate &&
               new Date(3000, 11) > new Date(dueDate) &&
               formatRelative(new Date(dueDate), new Date(), {
@@ -190,30 +183,30 @@ export const columns: ColumnDef<TTicket>[] = [
               })}
           </span>
         </div>
-      )
+      );
     },
     enableSorting: true,
-  },
-  {
-    accessorKey: 'asignee',
-    meta: {
-      columnName: 'Asignee',
-    },
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={column.columnDef.meta!.columnName}
       />
     ),
+    meta: {
+      columnName: 'Due Date',
+    },
+  },
+  {
+    accessorKey: 'asignee',
     cell: ({ row }) => {
-      const asignee = row.getValue('asignee') as TUser
+      const asignee = row.getValue('asignee') as User;
 
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <div className='flex space-x-2'>
-                <span className='max-w-[150px] truncate font-medium'>
+              <div className="flex space-x-2">
+                <span className="max-w-[150px] truncate font-medium">
                   {asignee?.email ?? ''}
                 </span>
               </div>
@@ -223,14 +216,38 @@ export const columns: ColumnDef<TTicket>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )
+      );
     },
     enableSorting: false,
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title={column.columnDef.meta!.columnName}
+      />
+    ),
+    meta: {
+      columnName: 'Asignee',
+    },
   },
   {
     accessorKey: 'status',
-    meta: {
-      columnName: 'Status',
+    cell: ({ row }) => {
+      const status = statuses.find(
+        (status) => status.value === row.getValue('status'),
+      );
+
+      if (!status) {
+        return null;
+      }
+
+      return (
+        <div className="flex w-[100px] items-center">
+          {status.icon && (
+            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{status?.label}</span>
+        </div>
+      );
     },
     header: ({ column }) => (
       <DataTableColumnHeader
@@ -238,27 +255,12 @@ export const columns: ColumnDef<TTicket>[] = [
         title={column.columnDef.meta!.columnName}
       />
     ),
-    cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue('status')
-      )
-
-      if (!status) {
-        return null
-      }
-
-      return (
-        <div className='flex w-[100px] items-center'>
-          {status.icon && (
-            <status.icon className='mr-2 h-4 w-4 text-muted-foreground' />
-          )}
-          <span>{status?.label}</span>
-        </div>
-      )
+    meta: {
+      columnName: 'Status',
     },
   },
   {
-    id: 'actions',
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    id: 'actions',
   },
-]
+];

@@ -1,27 +1,27 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserDto {
   @ApiProperty()
-  _id: string
+  _id: string;
 
   @ApiProperty()
-  gender: string
+  gender: string;
 
   @ApiProperty()
-  firstName: string
+  firstName: string;
 
   @ApiProperty()
-  lastName: string
+  lastName: string;
 
   @ApiProperty()
-  email: string
+  email: string;
 
   @ApiProperty()
-  birthday: string
+  birthday: string;
 
   @ApiProperty()
-  lastConnection: string
+  lastConnection: string;
 
   @ApiProperty()
-  lastUpdate: string
+  lastUpdate: string;
 }

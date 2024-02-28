@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { DataTable } from './data-table/data-table'
+import { DataTable } from './data-table/data-table';
 
 export function TicketsTable() {
-  return <DataTable floatingBar={true} />
+  return <DataTable floatingBar={true} />;
 }

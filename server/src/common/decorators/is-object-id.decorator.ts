@@ -1,5 +1,5 @@
-import { registerDecorator, ValidationOptions } from 'class-validator'
-import { Types as MongooseTypes } from 'mongoose'
+import { registerDecorator, ValidationOptions } from 'class-validator';
+import { Types as MongooseTypes } from 'mongoose';
 
 export function IsObjectId(
   validationOptions?: ValidationOptions,
@@ -7,14 +7,14 @@ export function IsObjectId(
   return (object: object, propertyName: string) => {
     registerDecorator({
       name: 'isObjectId',
-      target: object.constructor,
-      propertyName,
       options: validationOptions,
+      propertyName,
+      target: object.constructor,
       validator: {
         validate(value: any) {
-          return MongooseTypes.ObjectId.isValid(value)
+          return MongooseTypes.ObjectId.isValid(value);
         },
       },
-    })
-  }
+    });
+  };
 }

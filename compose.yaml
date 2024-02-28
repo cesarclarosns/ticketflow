@@ -1,19 +1,52 @@
 version: "3.8"
 
 services:
-  api:
-    container_name: api
+  db:
+    container_name: db
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: ticketflow
+    ports:
+      - 27017:27017
+    volumes:
+      - ./db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - db-data:/data/db
+
+  seeder:
+    depends_on:
+      - db
+    container_name: seeder
     build:
-      context: ./api
+      context: ./server
       dockerfile: Dockerfile
+      target: builder
     env_file:
-      - ./api/.env
+      - ./server/.env
+    command: ["npm", "run", "seed:refresh"]
+
+  server:
+    depends_on:
+      - seeder
+    container_name: server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: runner
+    env_file:
+      - ./server/.env
     ports:
       - "4000:4000"
-  front:
-    container_name: front
+
+  client:
+    container_name: client
     build:
-      context: ./front
+      context: ./client
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+
+volumes:
+  db-data:

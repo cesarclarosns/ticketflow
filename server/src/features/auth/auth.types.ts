@@ -1,4 +1,3 @@
-export type TTokenPayload = {
-  sub: string
-  email: string
-}
+export type TokenPayload = {
+  sub: string;
+};

@@ -1,4 +1,3 @@
-import { EUserGender } from '@common/models/user'
 import {
   Select,
   SelectContent,
@@ -7,34 +6,35 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@components/ui/select'
+} from '@/components/ui/select';
+import { EUserGender } from '@/models/users/user';
 
 const genders: { value: EUserGender; label: string }[] = [
   {
-    value: EUserGender.female,
     label: 'Female',
+    value: EUserGender.female,
   },
   {
-    value: EUserGender.male,
     label: 'Male',
+    value: EUserGender.male,
   },
   {
-    value: EUserGender.other,
     label: 'Other',
+    value: EUserGender.other,
   },
-]
+];
 
 export function UserGenderSelect({
   defaultValue,
   onValueChange,
 }: {
-  defaultValue: string | undefined
-  onValueChange: (value: string) => void
+  defaultValue: string | undefined;
+  onValueChange: (value: string) => void;
 }) {
   return (
     <Select onValueChange={onValueChange} defaultValue={defaultValue}>
       <SelectTrigger>
-        <SelectValue placeholder='Select gender' />
+        <SelectValue placeholder="Select gender" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -45,10 +45,10 @@ export function UserGenderSelect({
                 <SelectItem key={gender.value} value={gender.value}>
                   {gender.label}
                 </SelectItem>
-              )
+              );
             })}
         </SelectGroup>
       </SelectContent>
     </Select>
-  )
+  );
 }

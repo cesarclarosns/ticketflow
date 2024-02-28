@@ -1,35 +1,36 @@
-import { Test, TestingModule } from '@nestjs/testing'
-import { ConfigModule } from '@nestjs/config'
-import { TestBed } from '@automock/jest'
-import { EmailService } from './email.service'
-import { MailerService } from '@nestjs-modules/mailer'
+import { TestBed } from '@automock/jest';
+import { ConfigModule } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { MailerService } from '@nestjs-modules/mailer';
+
+import { EmailService } from './email.service';
 
 describe('EmailService', () => {
-  let emailService: EmailService
+  let emailService: EmailService;
 
-  let mailerService: MailerService
+  let mailerService: MailerService;
 
   beforeEach(async () => {
-    const { unit, unitRef } = TestBed.create(EmailService).compile()
+    const { unit, unitRef } = TestBed.create(EmailService).compile();
 
-    emailService = unit
+    emailService = unit;
 
-    mailerService = unitRef.get(MailerService)
-  })
+    mailerService = unitRef.get(MailerService);
+  });
 
   it('should be defined', () => {
-    expect(emailService).toBeDefined()
-  })
+    expect(emailService).toBeDefined();
+  });
 
   describe('welcomeEmail', () => {
     it('should', async () => {
       //
-    })
-  })
+    });
+  });
 
   describe('resetPasswordEmail', () => {
     it('should', async () => {
       //
-    })
-  })
-})
+    });
+  });
+});

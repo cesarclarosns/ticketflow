@@ -1,18 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PatchResponseBodyDto {
   @ApiProperty()
-  acknowledged: boolean
+  acknowledged: boolean;
 
   @ApiProperty()
-  modifiedCount: number
+  modifiedCount: number;
 
   @ApiProperty()
-  upsertedId: null | string
+  upsertedId: null | string;
 
   @ApiProperty()
-  upsertedCount: number
+  upsertedCount: number;
 
   @ApiProperty()
-  matchedCount: number
+  matchedCount: number;
 }

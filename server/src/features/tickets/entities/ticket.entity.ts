@@ -1,7 +1,7 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { FilterQuery, HydratedDocument } from 'mongoose'
-import * as MongooseDelete from 'mongoose-delete'
-import { Factory } from 'nestjs-seeder'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document } from 'mongoose';
+import MongooseDelete from 'mongoose-delete';
+import { Factory } from 'nestjs-seeder';
 
 export enum ETicketStatus {
   'pending' = 'pending',
@@ -11,44 +11,43 @@ export enum ETicketStatus {
 }
 
 @Schema({
-  timestamps: true,
   collection: 'tickets',
+  timestamps: true,
+  versionKey: false,
 })
-export class Ticket {
-  @Factory((faker) => faker.lorem.words({ min: 1, max: 3 }))
+export class Ticket extends Document {
+  @Factory((faker) => faker.lorem.words({ max: 3, min: 1 }))
   @Prop({ required: true, type: String })
-  title: string
+  title: string;
 
-  @Factory((faker) => faker.lorem.words({ min: 1, max: 3 }))
+  @Factory((faker) => faker.lorem.words({ max: 3, min: 1 }))
   @Prop({ required: true, type: String })
-  description: string
+  description: string;
 
   @Factory((faker, ctx) => ctx.asignee)
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'users' })
-  asignee: string
+  @Prop({ ref: 'users', required: true, type: mongoose.Schema.Types.ObjectId })
+  asignee: mongoose.Types.ObjectId;
 
   @Factory((faker) => faker.date.soon({ days: 30 }))
-  @Prop({ type: Date, default: new Date(9999, 11) })
-  dueDate: string
+  @Prop({ default: new Date(9999, 11), type: Date })
+  dueDate: string;
 
   @Factory((faker, ctx) => ctx.ticketCategory)
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
-  ticketCategory: string
+  @Prop({ ref: 'categories', type: mongoose.Schema.Types.ObjectId })
+  ticketCategory: string;
 
   @Factory((faker) => faker.helpers.arrayElement(Object.values(ETicketStatus)))
-  @Prop({ type: String, enum: ETicketStatus, default: ETicketStatus.pending })
-  status: ETicketStatus
+  @Prop({ default: ETicketStatus.pending, enum: ETicketStatus, type: String })
+  status: ETicketStatus;
 
   @Factory((faker, ctx) => ctx.createdBy)
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'users' })
-  createdBy: string
+  @Prop({ ref: 'users', required: true, type: mongoose.Schema.Types.ObjectId })
+  createdBy: mongoose.Types.ObjectId;
 }
 
-export type TicketDocument = HydratedDocument<Ticket>
-export const TicketSchema = SchemaFactory.createForClass(Ticket)
+export const TicketSchema = SchemaFactory.createForClass(Ticket);
+
 TicketSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: true,
-})
-
-export type TicketFilterQuery = FilterQuery<TicketDocument>
+});

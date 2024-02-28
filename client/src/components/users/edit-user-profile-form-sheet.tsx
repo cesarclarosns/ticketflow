@@ -1,16 +1,12 @@
-/* eslint-disable react/no-unescaped-entities */
-import { Button } from '@components/ui/button'
-import { Input } from '@components/ui/input'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@components/ui/sheet'
-import { DialogProps } from '@radix-ui/react-alert-dialog'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { type DialogProps } from '@radix-ui/react-alert-dialog';
+import { AxiosError } from 'axios';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import { type CustomFormProps } from '@/common/types/custom-form-props.type';
+import { ResponseErrorMessage } from '@/components/response-error-message';
+import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Form,
   FormControl,
@@ -18,32 +14,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@components/ui/form'
-import { Icons } from '@components/ui/icons'
-import { TUser, userSchema } from '@common/models/user'
-import { useCurrentUser, useUpdateUser } from '@hooks/users'
-import { UserGenderSelect } from './user-gender-select'
-import { DatePicker } from '@components/ui/date-picker'
-import { TCustomFormProps } from '@common/types/custom-form-props.type'
-import { useToast } from '@components/ui/use-toast'
-import { AxiosError } from 'axios'
-import { ResponseErrorMessage } from '@components/response-error-message'
+} from '@/components/ui/form';
+import { Icons } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { useToast } from '@/components/ui/use-toast';
+import { useGetCurrentUserQuery } from '@/hooks/users/use-get-current-user-query';
+import { useUpdateUserMutation } from '@/hooks/users/use-update-user-mutation';
+import { type User, userSchema } from '@/models/users/user';
+import { type UpdateUser } from '@/schemas/users/update-user';
+
+import { UserGenderSelect } from './user-gender-select';
 
 export function EditUserProfileFormSheet({
-  id,
   open,
   onOpenChange,
 }: {
-  id?: string
-  open: DialogProps['open']
-  onOpenChange: DialogProps['onOpenChange']
+  open: DialogProps['open'];
+  onOpenChange: DialogProps['onOpenChange'];
 }) {
-  const { data: user } = useCurrentUser()
+  const { data: user } = useGetCurrentUserQuery();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className='max-h-screen overflow-y-scroll lg:max-w-[500px]'>
-        <SheetHeader className=''>
+      <SheetContent className="max-h-screen overflow-y-scroll lg:max-w-[500px]">
+        <SheetHeader className="">
           <SheetTitle>Edit profile</SheetTitle>
 
           <SheetDescription>
@@ -55,39 +56,38 @@ export function EditUserProfileFormSheet({
           <EditUserProfileForm
             user={user}
             onSuccess={() => {
-              if (onOpenChange) onOpenChange(false)
+              if (onOpenChange) onOpenChange(false);
             }}
           />
         )}
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 function EditUserProfileForm({
   user,
   onSuccess,
   onError,
-}: TCustomFormProps & { user: TUser }) {
-  const { toast } = useToast()
+}: CustomFormProps & { user: User }) {
+  const { toast } = useToast();
 
-  const { mutateAsync } = useUpdateUser(user._id)
+  const { mutateAsync } = useUpdateUserMutation(user._id);
 
-  const onSubmit: SubmitHandler<TUser> = (data) => {
+  const onSubmit: SubmitHandler<UpdateUser> = (data) => {
     mutateAsync(data)
       .then(() => {
         toast({
           title: 'Profile edited.',
-        })
+        });
 
-        if (onSuccess) onSuccess()
+        if (onSuccess) onSuccess();
       })
       .catch((error) => {
         if (error instanceof AxiosError) {
-          const message = error?.response?.data?.message
+          const message = error?.response?.data?.message;
 
           toast({
-            title: 'Uh oh! Something went wrong.',
             description: (
               <>
                 {message ? (
@@ -97,15 +97,16 @@ function EditUserProfileForm({
                 )}
               </>
             ),
+            title: 'Uh oh! Something went wrong.',
             variant: 'destructive',
-          })
+          });
         }
 
-        if (onError) onError(error)
-      })
-  }
+        if (onError) onError(error);
+      });
+  };
 
-  const form = useForm<TUser>({
+  const form = useForm<User>({
     defaultValues: {
       ...(user?.firstName ? { firstName: user.firstName } : {}),
       ...(user?.lastName ? { lastName: user.lastName } : {}),
@@ -113,75 +114,75 @@ function EditUserProfileForm({
       ...(user?.birthday ? { birthday: user.birthday } : {}),
       ...(user?.gender ? { gender: user.gender } : {}),
     },
+    mode: 'all',
     resolver: zodResolver(
       userSchema.pick({
-        firstName: true,
-        lastName: true,
-        email: true,
         birthday: true,
+        email: true,
+        firstName: true,
         gender: true,
-      })
+        lastName: true,
+      }),
     ),
-    mode: 'all',
-  })
+  });
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className='mt-5 flex flex-col gap-5'
+        className="mt-5 flex flex-col gap-5"
       >
         <FormField
           control={form.control}
-          name='firstName'
+          name="firstName"
           render={({ field }) => {
             return (
               <FormItem>
                 <FormLabel>First name</FormLabel>
                 <FormControl>
-                  <Input placeholder='First name...' {...field} />
+                  <Input placeholder="First name..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
-            )
+            );
           }}
         ></FormField>
 
         <FormField
           control={form.control}
-          name='lastName'
+          name="lastName"
           render={({ field }) => {
             return (
               <FormItem>
                 <FormLabel>Last name</FormLabel>
                 <FormControl>
-                  <Input placeholder='Last name...' {...field} />
+                  <Input placeholder="Last name..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
-            )
+            );
           }}
         ></FormField>
 
         <FormField
           control={form.control}
-          name='email'
+          name="email"
           render={({ field }) => {
             return (
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder='Email...' {...field} />
+                  <Input placeholder="Email..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
-            )
+            );
           }}
         ></FormField>
 
         <FormField
           control={form.control}
-          name='gender'
+          name="gender"
           render={({ field }) => {
             return (
               <FormItem>
@@ -194,46 +195,46 @@ function EditUserProfileForm({
                 </FormControl>
                 <FormMessage />
               </FormItem>
-            )
+            );
           }}
         ></FormField>
 
         <FormField
           control={form.control}
-          name='birthday'
+          name="birthday"
           render={({ field }) => {
             return (
-              <FormItem className='flex flex-col gap-2'>
+              <FormItem className="flex flex-col gap-2">
                 <FormLabel>Birthday</FormLabel>
                 <DatePicker
-                  captionLayout='dropdown-buttons'
+                  captionLayout="dropdown-buttons"
                   fromYear={1900}
                   toYear={new Date(Date.now()).getFullYear()}
                   selected={field.value ? new Date(field.value) : undefined}
                   onSelect={(date) => {
                     if (date) {
-                      field.onChange(date.toISOString())
+                      field.onChange(date.toISOString());
                     }
                   }}
                 />
                 <FormMessage />
               </FormItem>
-            )
+            );
           }}
         ></FormField>
 
-        <div className='my-5 flex justify-end'>
+        <div className="my-5 flex justify-end">
           <Button
             disabled={
               !form.formState.isValid ||
               form.formState.isSubmitting ||
               !form.formState.isDirty
             }
-            type='submit'
+            type="submit"
           >
             {form.formState.isSubmitting ? (
               <>
-                <Icons.Loader2Icon className='mr-2 h-4 w-4 animate-spin' />
+                <Icons.Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </>
             ) : (
@@ -243,5 +244,5 @@ function EditUserProfileForm({
         </div>
       </form>
     </Form>
-  )
+  );
 }

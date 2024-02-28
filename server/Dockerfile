@@ -1,17 +1,15 @@
-FROM node:20.7.0-alpine3.18 as base
+FROM node:20.11.1-bullseye-slim as base
 WORKDIR /app
-# Enable modern yarn
-RUN corepack enable 
 
 FROM base as builder
-COPY package.json yarn.lock .yarnrc.yml ./
-RUN yarn install
+COPY package.json package-lock.json ./
+RUN npm install
 COPY . ./
-RUN yarn build
+RUN npm run build
 
 FROM base as runner
 COPY --from=builder /app/dist ./dist
-COPY package.json yarn.lock .yarnrc.yml ./
-RUN yarn workspaces focus --production
+COPY package.json package-lock.json ./
+RUN npm install --omit=dev
 EXPOSE 4000 
-CMD ["yarn", "start:prod"]
+CMD ["npm", "run", "start:prod"]

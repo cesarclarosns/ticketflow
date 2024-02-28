@@ -1,12 +1,7 @@
-import { UserRegisteredEvent } from './user-registered.event'
-import { UserResetPasswordEvent } from './user-reset-password.event'
+import { UserCreatedEvent } from './user-created.event';
 
-const USERS_EVENTS: {
-  userRegistered: 'user.registered'
-  userResetPassword: 'user.resetPassword'
-} = {
-  userRegistered: 'user.registered',
-  userResetPassword: 'user.resetPassword',
-}
+export const USERS_EVENTS = {
+  UserCreated: 'Users.UserCreated',
+};
 
-export { UserRegisteredEvent, UserResetPasswordEvent, USERS_EVENTS }
+export { UserCreatedEvent };

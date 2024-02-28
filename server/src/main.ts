@@ -1,58 +1,55 @@
-// Import core libraries
-import { NestFactory } from '@nestjs/core'
-import { ValidationPipe } from '@nestjs/common'
-import { AppModule } from './app.module'
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { useContainer } from 'class-validator';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import mongoose from 'mongoose';
+import { Logger } from 'nestjs-pino';
 
-import helmet from 'helmet'
-import { ConfigService } from '@nestjs/config'
-import * as cookieParser from 'cookie-parser'
-import { CONFIG_VALUES } from '@config/config'
-import { MongooseExceptionFilter } from '@libs/filters/mongoose-exception.filter'
-import { useContainer } from 'class-validator'
+import { MongooseExceptionFilter } from '@/common/libs/filters/mongoose-exception.filter';
 
-const allowedOrigins = [
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:4000',
-  'http://localhost:3000',
-  'http://localhost:4000',
-  'https://enroudesk.cesarclarosns.com',
-]
+import { AppModule } from './app.module';
+import { CorsError } from './common/errors/cors.error';
+import { CorsExceptionFilter } from './common/libs/filters/cors-exception.filter';
+import { config } from './config';
+
+// mongoose.set('debug', true);
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    cors: {
-      origin: (origin, cb) => {
-        //Allow requests with no origin
-        if (!origin) return cb(null, true)
+    bufferLogs: true,
+  });
 
-        if (allowedOrigins.indexOf(origin) === -1) {
-          const msg =
-            'The CORS policy for this site does not allow access from the specified origin.'
-          return cb(new Error(msg), false)
-        }
+  // Set logger
+  app.useLogger(app.get(Logger));
 
-        return cb(null, true)
-      },
-      credentials: true,
+  // Set cors
+  const allowedOrigins = config.CORS.ALLOWED_ORIGINS.split(',');
+
+  app.enableCors({
+    credentials: true,
+    origin: (origin, cb) => {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        return cb(null, true);
+      }
+      return cb(new CorsError('Not allowed by CORS.'));
     },
-  })
+  });
 
-  const configService = app.get(ConfigService)
+  const apiPrefix = config.APP.API_PATH;
 
-  // Setting up the app
-  const apiPrefix = configService.getOrThrow<string>(
-    CONFIG_VALUES.app.apiPrefix,
-  )
+  app.setGlobalPrefix(apiPrefix);
 
-  app.setGlobalPrefix(apiPrefix)
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalFilters(
+    new MongooseExceptionFilter(),
+    new CorsExceptionFilter(),
+  );
+  app.use(helmet());
+  app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe())
-  app.useGlobalFilters(new MongooseExceptionFilter())
-  app.use(helmet())
-  app.use(cookieParser())
-
-  useContainer(app.select(AppModule), { fallbackOnErrors: true })
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   // Setting OpenAPI docs
   const swaggerConfig = new DocumentBuilder()
@@ -62,26 +59,26 @@ async function bootstrap() {
     .addCookieAuth(
       'refreshToken',
       {
-        type: 'apiKey',
         in: 'cookie',
         name: 'refreshToken',
+        type: 'apiKey',
       },
       'refreshToken',
     )
     .addBearerAuth(
       {
-        type: 'http',
-        scheme: 'bearer',
-        name: 'accessToken',
         in: 'header',
+        name: 'accessToken',
+        scheme: 'bearer',
+        type: 'http',
       },
       'accessToken',
     )
-    .build()
-  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig)
-  SwaggerModule.setup(`${apiPrefix}/docs/api`, app, swaggerDocument)
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup(`${apiPrefix}/docs/api`, app, swaggerDocument);
 
-  const port = configService.getOrThrow<number>(CONFIG_VALUES.app.listeningPort)
-  await app.listen(port)
+  const port = config.APP.LISTENING_PORT;
+  await app.listen(port);
 }
-bootstrap()
+bootstrap();

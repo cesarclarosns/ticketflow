@@ -1,22 +1,33 @@
-import { Module } from '@nestjs/common'
-import { AuthService } from './auth.service'
-import { AuthController } from './auth.controller'
-import { ConfigModule } from '@nestjs/config'
-import { UsersModule } from '@features/users/users.module'
-import { JwtModule } from '@nestjs/jwt'
-import { AccessTokenStrategy, RefreshTokenStrategy } from './strategies'
-import { AccessTokenGuard, RefreshTokenGuard } from './guards'
+import { forwardRef, Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+
+import { UsersModule } from '@/features/users/users.module';
+
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import {
+  AccessTokenGuard,
+  GoogleOAuthGuard,
+  RefreshTokenGuard,
+} from './guards';
+import {
+  AccessTokenStrategy,
+  GoogleOAuthStrategy,
+  RefreshTokenStrategy,
+} from './strategies';
 
 @Module({
-  imports: [ConfigModule, UsersModule, JwtModule.register({})],
   controllers: [AuthController],
+  exports: [AuthService],
+  imports: [JwtModule.register({}), UsersModule],
   providers: [
     AuthService,
     AccessTokenStrategy,
-    RefreshTokenStrategy,
     AccessTokenGuard,
+    RefreshTokenStrategy,
     RefreshTokenGuard,
+    GoogleOAuthStrategy,
+    GoogleOAuthGuard,
   ],
-  exports: [AuthService],
 })
 export class AuthModule {}

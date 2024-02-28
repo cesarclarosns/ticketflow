@@ -1,30 +1,28 @@
-import type { Metadata } from 'next'
+import './globals.css';
 
-import './globals.css'
-import Providers from '@components/providers/providers'
-import { Toaster } from '@components/ui/toaster'
+import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
+import type { Metadata } from 'next';
 
-import { GeistSans } from 'geist/font/sans'
-import Layout from '@components/layout/layout'
+import { Toaster } from '@/components/ui/toaster';
+import Providers from '@/providers';
 
 export const metadata: Metadata = {
-  title: 'Enroudesk',
   description: 'A simple web help desk system for a team like yours',
-}
+  title: 'TicketFlow',
+};
 
-export default function RootLayout(props: {
-  children: React.ReactNode
-  marketing: React.ReactNode
-  app: React.ReactNode
-}) {
+export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang='en'>
+    <html
+      lang="en"
+      suppressHydrationWarning={true}
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+    >
       <body className={GeistSans.className}>
-        <Providers>
-          <Layout {...props} />
-        </Providers>
+        <Providers>{props.children}</Providers>
         <Toaster></Toaster>
       </body>
     </html>
-  )
+  );
 }

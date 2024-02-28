@@ -5,7 +5,11 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: [
+    '@typescript-eslint/eslint-plugin',
+    'simple-import-sort',
+    'sort-keys',
+  ],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
@@ -20,15 +24,11 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-explicit-any': 'off',
-    semi: 'off',
-    '@typescript-eslint/semi': ['error', 'never'],
-    'prettier/prettier': [
-      'error',
-      {
-        semi: false,
-      },
-    ],
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
+    'sort-keys': 0, // disable default eslint sort-keys
+    'sort-keys/sort-keys-fix': 1,
   },
 };

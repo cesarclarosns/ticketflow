@@ -1,55 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing'
-import { AuthController } from './auth.controller'
-import { AuthService } from './auth.service'
-import { TestBed } from '@automock/jest'
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
-  let authController: AuthController
-  let authService: jest.Mocked<AuthService>
+  let controller: AuthController;
 
   beforeEach(async () => {
-    const { unit, unitRef } = TestBed.create(AuthController).compile()
-    authController = unit
-    authService = unitRef.get(AuthService)
-  })
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AuthController],
+      providers: [AuthService],
+    }).compile();
+
+    controller = module.get<AuthController>(AuthController);
+  });
 
   it('should be defined', () => {
-    expect(authController).toBeDefined()
-  })
-
-  describe('signIn', () => {
-    it('should', async () => {
-      //
-    })
-  })
-
-  describe('signUp', () => {
-    it('should', async () => {
-      //
-    })
-  })
-
-  describe('signOut', () => {
-    it('should', async () => {
-      //
-    })
-  })
-
-  describe('resetPassword', () => {
-    it('should', async () => {
-      //
-    })
-  })
-
-  describe('resetPasswordCallback', () => {
-    it('should', async () => {
-      //
-    })
-  })
-
-  describe('refreshTokens', () => {
-    it('should', async () => {
-      //
-    })
-  })
-})
+    expect(controller).toBeDefined();
+  });
+});

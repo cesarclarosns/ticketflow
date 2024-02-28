@@ -1,10 +1,7 @@
-'use client'
+'use client';
 
-import * as React from 'react'
 import {
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -12,10 +9,14 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
   useReactTable,
-  RowSelectionState,
-  PaginationState,
-} from '@tanstack/react-table'
+  type VisibilityState,
+} from '@tanstack/react-table';
+import * as React from 'react';
+
 import {
   Table,
   TableBody,
@@ -23,139 +24,161 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@components/ui/table'
-import { DataTablePagination } from './data-table-pagination'
-import { DataTableToolbar } from './data-table-toolbar'
-import { columns } from './columns'
-import { useTickets } from '@hooks/tickets'
-import { useDebounce } from '@hooks/use-debounce'
+} from '@/components/ui/table';
+import {
+  useGetTicketsQuery,
+  type UseGetTicketsQueryParams,
+} from '@/hooks/tickets/use-get-tickets-query';
+import { useDebounce } from '@/hooks/use-debounce';
 
-export const DEFAULT_PAGE_INDEX = 0
-export const DEFAULT_PAGE_SIZE = 10
+import { columns } from './columns';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar } from './data-table-toolbar';
+
+export const DEFAULT_PAGE_INDEX = 0;
+export const DEFAULT_PAGE_SIZE = 10;
 
 interface DataTableProps<TData, TValue> {
-  floatingBar: boolean
+  floatingBar: boolean;
 }
 
 export function DataTable<TData, TValue>({
   floatingBar = false,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+    React.useState<VisibilityState>({});
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const debouncedSorting = useDebounce(sorting)
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const debouncedSorting = useDebounce(sorting);
 
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const debouncedColumnFilters = useDebounce(columnFilters)
+    [],
+  );
+  const debouncedColumnFilters = useDebounce(columnFilters);
 
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: DEFAULT_PAGE_INDEX,
     pageSize: DEFAULT_PAGE_SIZE,
-  })
-  const debouncedPagination = useDebounce(pagination)
+  });
+  const debouncedPagination = useDebounce(pagination);
 
-  //Handle server-side pagination
+  // Handle server-side pagination
   const getPageCount = (totalCount: number) => {
-    return Math.ceil(totalCount / pagination.pageSize)
-  }
+    return Math.ceil(totalCount / pagination.pageSize);
+  };
 
   const getSkip = () => {
-    return debouncedPagination.pageIndex * debouncedPagination.pageSize
-  }
+    return debouncedPagination.pageIndex * debouncedPagination.pageSize;
+  };
 
   const getLimit = () => {
-    return debouncedPagination.pageSize
-  }
+    return debouncedPagination.pageSize;
+  };
 
-  //Handle server-side sorting
-  const getSort = () => {
+  // Handle server-side sorting
+  const getSort = (): UseGetTicketsQueryParams['sort'] => {
+    console.log('getSort', { debouncedSorting });
     if (debouncedSorting.length) {
-      return `${debouncedSorting[0].desc ? '' : '-'}${debouncedSorting[0].id}`
-    }
-    return ''
-  }
+      const debounced = debouncedSorting.at(0)!;
 
-  //Handle server-side filtering
-  const getFilter = () => {
+      if (debounced.id === 'dueDate') {
+        return debounced.desc ? 'dueDate' : '-dueDate';
+      }
+      if (debounced.id === 'title') {
+        return debounced.desc ? 'title' : '-title';
+      }
+    }
+
+    return;
+  };
+
+  // Handle server-side filtering
+  const getFilter = (): Pick<
+    UseGetTicketsQueryParams,
+    'ticketCategories' | 'statuses' | 'query'
+  > => {
     if (debouncedColumnFilters.length) {
-      const filter: { $and: any[] } = { $and: [] }
+      const params: Pick<
+        UseGetTicketsQueryParams,
+        'ticketCategories' | 'statuses' | 'query'
+      > = {};
 
-      debouncedColumnFilters.forEach((columnFilter) => {
-        if (columnFilter.id == 'status') {
-          filter.$and.push({ status: { $in: columnFilter.value } })
+      for (const columnFilter of debouncedColumnFilters) {
+        if (
+          columnFilter.id === 'title' &&
+          typeof columnFilter.value === 'string'
+        ) {
+          params['query'] = columnFilter.value;
         }
 
-        if (columnFilter.id == 'title') {
-          filter.$and.push({
-            title: columnFilter.value,
-          })
+        if (columnFilter.id === 'status') {
+          if (!params['statuses'])
+            params['statuses'] = columnFilter.value as string[];
         }
 
-        if (columnFilter.id == 'ticketCategory') {
-          filter.$and.push({ ticketCategory: { $in: columnFilter.value } })
+        if (columnFilter.id === 'ticketCategory') {
+          if (!params['ticketCategories'])
+            params['ticketCategories'] = columnFilter.value as string[];
         }
-      })
+      }
 
-      if (filter.$and.length) return JSON.stringify(filter)
+      return params;
     }
 
-    return ''
-  }
+    return {};
+  };
 
-  //Handle row selection
+  // Handle row selection
   const deleteRowsAction = async () => {
-    await Promise.all([])
-  }
+    await Promise.all([]);
+  };
 
-  //Fetch dada
-  const { isLoading, isError, data } = useTickets({
-    skip: getSkip(),
+  // Fetch dada
+  const { isLoading, isError, data } = useGetTicketsQuery({
     limit: getLimit(),
-    filter: getFilter(),
+    skip: getSkip(),
     sort: getSort(),
-  })
+    ...getFilter(),
+  });
 
   const table = useReactTable({
-    data: data?.results ?? [],
-    pageCount: data?.totalCount?.count
-      ? getPageCount(data.totalCount.count)
-      : -1,
     columns,
-    state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters,
-      pagination,
-    },
+    data: data?.results ?? [],
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    manualFiltering: true,
     manualPagination: true,
     manualSorting: true,
-    manualFiltering: true,
-  })
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    pageCount: data?.totalCount?.count
+      ? getPageCount(data.totalCount.count)
+      : -1,
+    state: {
+      columnFilters,
+      columnVisibility,
+      pagination,
+      rowSelection,
+      sorting,
+    },
+  });
 
   return (
-    <div className='space-y-4'>
+    <div className="space-y-4">
       <DataTableToolbar table={table} />
-      <div className='relative max-h-[60vh] overflow-auto rounded-md border'>
+      <div className="relative max-h-[60vh] overflow-auto rounded-md border">
         <Table>
-          <TableHeader className='sticky top-0 z-10 bg-secondary'>
+          <TableHeader className="sticky top-0 z-10 bg-secondary">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -165,10 +188,10 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -184,7 +207,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -194,7 +217,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className='h-24 text-center'
+                  className="h-24 text-center"
                 >
                   No results.
                 </TableCell>
@@ -211,5 +234,5 @@ export function DataTable<TData, TValue>({
         />
       ) : null} */}
     </div>
-  )
+  );
 }

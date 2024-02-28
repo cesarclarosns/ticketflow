@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNumberString, IsOptional } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNumberString } from 'class-validator';
 
 export class PaginationQueryDto {
   @ApiProperty({
@@ -7,14 +7,13 @@ export class PaginationQueryDto {
     example: 10,
   })
   @IsNumberString()
-  limit: string
+  limit: string;
 
   @ApiProperty({
     description: 'Number of documents to skip',
     example: 0,
     required: false,
   })
-  @IsOptional()
   @IsNumberString()
-  skip?: string
+  skip: string;
 }

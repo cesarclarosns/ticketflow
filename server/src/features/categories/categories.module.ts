@@ -1,13 +1,16 @@
-import { Module } from '@nestjs/common'
-import { CategoriesService } from './categories.service'
-import { CategoriesController } from './categories.controller'
-import { MongooseModule } from '@nestjs/mongoose'
-import { Category, CategorySchema } from './entities/category.entity'
-import { IsUserIdValidatorConstraint } from '@features/users/decorators/is-user-id.decorator'
-import { UsersModule } from '@features/users/users.module'
-import { TicketsModule } from '@features/tickets/tickets.module'
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+
+import { TicketsModule } from '@/features/tickets/tickets.module';
+import { IsUserIdValidatorConstraint } from '@/features/users/decorators/is-user-id.decorator';
+import { UsersModule } from '@/features/users/users.module';
+
+import { CategoriesController } from './categories.controller';
+import { CategoriesService } from './categories.service';
+import { Category, CategorySchema } from './entities/category.entity';
 
 @Module({
+  controllers: [CategoriesController],
   imports: [
     MongooseModule.forFeature([
       {
@@ -18,7 +21,6 @@ import { TicketsModule } from '@features/tickets/tickets.module'
     UsersModule,
     TicketsModule,
   ],
-  controllers: [CategoriesController],
   providers: [CategoriesService, IsUserIdValidatorConstraint],
 })
 export class CategoriesModule {}

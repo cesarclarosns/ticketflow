@@ -1,23 +1,22 @@
-import { Html } from '@react-email/html'
-import { Text } from '@react-email/text'
-import { Container } from '@react-email/container'
-import { Heading } from '@react-email/heading'
-import { Tailwind } from '@react-email/tailwind'
-import { Button } from '@react-email/button'
-import { Body } from '@react-email/body'
-import { Font } from '@react-email/font'
-import { Head } from '@react-email/head'
-import { Hr } from '@react-email/hr'
-import { Section } from '@react-email/section'
-
-import * as React from 'react'
+import { Body } from '@react-email/body';
+import { Button } from '@react-email/button';
+import { Container } from '@react-email/container';
+import { Font } from '@react-email/font';
+import { Head } from '@react-email/head';
+import { Heading } from '@react-email/heading';
+import { Hr } from '@react-email/hr';
+import { Html } from '@react-email/html';
+import { Section } from '@react-email/section';
+import { Tailwind } from '@react-email/tailwind';
+import { Text } from '@react-email/text';
+import * as React from 'react';
 
 export const ResetPasswordEmail = ({
   resetPasswordLink,
   email,
 }: {
-  resetPasswordLink: string
-  email: string
+  resetPasswordLink: string;
+  email: string;
 }) => {
   return (
     <Tailwind>
@@ -27,8 +26,8 @@ export const ResetPasswordEmail = ({
             fontFamily="Roboto"
             fallbackFontFamily="Verdana"
             webFont={{
-              url: 'https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2',
               format: 'woff2',
+              url: 'https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2',
             }}
             fontWeight={400}
             fontStyle="normal"
@@ -37,7 +36,7 @@ export const ResetPasswordEmail = ({
         <Body className="bg-gray-200 py-5">
           <Container className="bg-gray-100 w-full p-5">
             <Section>
-              <Heading className="text-xl">Enroudesk</Heading>
+              <Heading className="text-xl">TicketFlow</Heading>
             </Section>
             <Hr></Hr>
             <Section className="py-10">
@@ -45,8 +44,8 @@ export const ResetPasswordEmail = ({
                 <span className="text-lg">👋</span> Hello,
               </Text>
               <Text className="text-gray-600">
-                We've received a request to reset the password for the Enroudesk
-                account associated with{' '}
+                We've received a request to reset the password for the
+                TicketFlow account associated with{' '}
                 <span className="font-bold">{email}</span>. No changes have been
                 made to your account yet.
               </Text>
@@ -63,13 +62,13 @@ export const ResetPasswordEmail = ({
             </Section>
             <Hr></Hr>
             <Section>
-              <Text className="text-gray-600 text-xs">Enroudesk</Text>
+              <Text className="text-gray-600 text-xs">TicketFlow</Text>
             </Section>
           </Container>
         </Body>
       </Html>
     </Tailwind>
-  )
-}
+  );
+};
 
-export default ResetPasswordEmail
+export default ResetPasswordEmail;

@@ -1,33 +1,32 @@
 import {
-  Controller,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Get,
-  Query,
   HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
   Req,
-} from '@nestjs/common'
-
-import { UsersService } from './users.service'
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  FindAllUsersQueryDto,
-  UserDto,
-} from './dto'
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-} from '@nestjs/swagger'
-import apq from 'api-query-params'
-import { PatchResponseBodyDto } from '@common/dto/patch-response-body.dto'
-import { UnauthorizedResponseBodyDto } from '@common/dto/unauthorized-reponse-body.dto'
-import { Request } from 'express'
+} from '@nestjs/swagger';
+import apq from 'api-query-params';
+import { Request } from 'express';
+
+import { PatchResponseBodyDto } from '@/common/dto/patch-response-body.dto';
+import { UnauthorizedResponseBodyDto } from '@/common/dto/unauthorized-reponse-body.dto';
+
+import { CreateUserDto } from './dto/create-user.dto';
+import { FindAllUsersDto } from './dto/find-all-users.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @ApiTags('users')
@@ -43,8 +42,8 @@ export class UsersController {
     type: UnauthorizedResponseBodyDto,
   })
   async findMyUser(@Req() req: Request) {
-    const userId = req.user.sub
-    return await this.usersService.findOnePublicUserById(userId)
+    const userId = req.user.sub;
+    return await this.usersService.findInfoById(userId);
   }
 
   @Get(':id')
@@ -55,7 +54,7 @@ export class UsersController {
     type: UnauthorizedResponseBodyDto,
   })
   async findOne(@Param('id') id: string) {
-    return await this.usersService.findOnePublicUserById(id)
+    return await this.usersService.findInfoById(id);
   }
 
   @Get()
@@ -66,24 +65,8 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     type: UnauthorizedResponseBodyDto,
   })
-  async findAll(@Query() query: FindAllUsersQueryDto) {
-    const q = apq({ ...query })
-
-    Object.entries(q.filter).forEach(([k, v]) => {
-      if (k === 'email' && typeof v === 'string') {
-        q.filter[k] = {
-          $regex: new RegExp(v),
-          $options: 'i',
-        }
-      }
-    })
-
-    return await this.usersService.findAll({
-      filter: q.filter,
-      limit: q.limit,
-      skip: q.skip,
-      sort: q.sort,
-    })
+  async findAll(@Query() findAllUsersDto: FindAllUsersDto) {
+    return await this.usersService.findAll(findAllUsersDto);
   }
 
   @Post()
@@ -95,7 +78,7 @@ export class UsersController {
     type: UnauthorizedResponseBodyDto,
   })
   async create(@Body() createUserDto: CreateUserDto) {
-    return await this.usersService.create(createUserDto)
+    return await this.usersService.create(createUserDto);
   }
 
   @Patch(':id')
@@ -106,6 +89,6 @@ export class UsersController {
     type: UnauthorizedResponseBodyDto,
   })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.usersService.update(id, updateUserDto)
+    return await this.usersService.update(id, updateUserDto);
   }
 }
